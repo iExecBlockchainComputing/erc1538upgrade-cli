@@ -23,7 +23,7 @@ The sub-calls must be given as a single (comma-separated) string of instruction.
 - `<value>`: an optional value (in wei) to pass along the call.
 
 
-As an exercice, lest unwrap this subcalls.
+As an exercice, lets unwrap this subcalls.
 ```
 0x607F4C5BB672230e8672085532f7e901544a7375:0xa9059cbb00000000000000000000000025229cfe0bd20e97aafcfaf82c57bb681c21db90000000000000000000000000000000000000000000000000000000e8d4a51000,0x25229Cfe0Bd20e97aAFCFaf82c57Bb681c21DB90@1000000000000000000
 ```
