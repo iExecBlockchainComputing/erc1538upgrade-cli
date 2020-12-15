@@ -17,7 +17,7 @@ Interact with a timelock
 - `npm run start:timelock`
 - follow the instructions
 
-The sub-calls must be given as a single (comma-separated) string of instruction. Each instruction must be encoded as `<address>(:<data>)?(:<value>)?` with
+The sub-calls must be given as a single (comma-separated) string of instruction. Each instruction must be encoded as `<address>(:<data>)?(@<value>)?` with
 - `<address>`: the address of the target contract (or eoa)
 - `<data>`: an optional data field (encoded function call when calling smart contracts)
 - `<value>`: an optional value (in wei) to pass along the call.
