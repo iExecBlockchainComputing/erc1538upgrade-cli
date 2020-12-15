@@ -1,9 +1,7 @@
 'use strict';
 
-const fs = require('fs');
 const { ethers } = require('ethers');
-const prompts = require('prompts');
-
+const cliWithSigner = require('./utils/wrapper.js');
 
 const abi = new ethers.utils.Interface([
 	'function hashOperation(address target, uint256 value, bytes calldata data, bytes32 predecessor, bytes32 salt)',
@@ -18,8 +16,7 @@ const subtx = /^(?<address>0x[0-9a-zA-Z]{40})(:(?<data>0x([0-9a-z]{2})*))?(@(?<v
 const bytes32 = /^0x[0-9a-z]{64}?$/;
 
 (async () => {
-
-	const responces = await prompts([
+	await cliWithSigner([
 		{
 			type: 'select',
 			name: 'operation',
@@ -56,52 +53,7 @@ const bytes32 = /^0x[0-9a-z]{64}?$/;
 			message: 'Id',
 			validate: input => bytes32.exec(input)
 		},
-		// execute/encode
-		{
-			type: 'select',
-			name: 'execute',
-			message: 'When',
-			choices: [
-				{ title: 'Encode for later', value: false },
-				{ title: 'Execute now', value: true },
-			],
-		},
-		// if execute → blockchain
-		{
-			type: (_, { execute }) => execute ? 'select' : null,
-			name: 'chain',
-			message: 'Select your blockchain',
-			choices: [
-				{ value: 'mainnet' },
-				{ value: 'rinkeby' },
-				{ value: 'ropsten' },
-				{ value: 'goerli' },
-				{ value: 'kovan' },
-				{ value: 'http://localhost:8545' },
-				{ title: 'custom endpoint', value: null },
-			],
-		},
-		// if execute → custom blockchain
-		{
-			type: (_, { execute, chain }) => execute && !chain ? 'text' : null,
-			name: 'chain',
-			message: 'Enter blockchain endpoint',
-		},
-		// if execute → instance
-		{
-			type: (_, { execute }) => execute ? 'text' : null,
-			name: 'instance',
-			message: 'Address of the deployment',
-			// validate: ethers.utils.isAddress, // can be ENS
-		},
-		{
-			type: (_, { execute }) => execute ? 'text' : null,
-			name: 'pk',
-			message: 'Private key of the owner',
-		},
-	]);
-
-	const data =
+	], (responces) =>
 		(responces.operation == 0 && responces.length == 1) ?
 			abi.encodeFunctionData(
 				'schedule(address,uint256,bytes,bytes32,bytes32,uint256)',
@@ -155,22 +107,8 @@ const bytes32 = /^0x[0-9a-z]{64}?$/;
 					responces.id,
 				]
 			)
-		: null;
-
-	console.log(data);
-	if (responces.execute)
-	{
-		const provider = ethers.getDefaultProvider(responces.chain);
-		const signer   = new ethers.Wallet(responces.pk, provider);
-		const receipt  = await signer.sendTransaction({ to: responces.instance, data });
-		await receipt.wait();
-		console.log('done');
-	}
-	else
-	{
-		console.log('To perform this operation, send a transaction to your timelock with the following data field:');
-		console.log(data);
-	}
+		: null
+	);
 
 })().catch(console.error);
 

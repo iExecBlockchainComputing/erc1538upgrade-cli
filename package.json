@@ -6,7 +6,8 @@
   "description": "",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js"
+    "start:erc1538update": "node src/erc1538update.js",
+    "start:timelock": "node src/timelock.js"
   },
   "dependencies": {
     "ethers": "^5.0.24",
