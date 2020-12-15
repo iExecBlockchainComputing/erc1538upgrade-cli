@@ -1,7 +1,7 @@
 {
   "name": "@iexec/erc1538upgrade-cli",
   "version": "1.0.0",
-	"author": "iExec",
+  "author": "iExec",
   "license": "Apache-2.0",
   "description": "",
   "main": "src/index.js",
@@ -9,6 +9,7 @@
     "start": "node src/index.js"
   },
   "dependencies": {
+    "ethers": "^5.0.24",
     "prompts": "^2.4.0"
   }
 }
