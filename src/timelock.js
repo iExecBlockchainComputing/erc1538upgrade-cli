@@ -30,9 +30,16 @@ const bytes32 = /^0x[0-9a-z]{64}?$/;
 		{
 			type: (_, { operation }) => operation == 0 || operation == 1 ? 'text' : null,
 			name: 'txs',
-			message: 'All sub-transactions (see readme for format)',
+			message: 'All sub-calls (see readme for format)',
 			validate: input => input.split(',').filter(Boolean).every(arg => subtx.exec(arg)),
 			format: input => input.split(',').filter(Boolean).map(arg => subtx.exec(arg).groups),
+		},
+		{
+			type: (_, { operation }) => operation == 0 || operation == 1 ? 'text' : null,
+			name: 'predecessor',
+			message: 'Predecessor',
+			initial: ethers.constants.HashZero,
+			validate: input => bytes32.exec(input)
 		},
 		{
 			type: (_, { operation }) => operation == 0 || operation == 1 ? 'text' : null,
@@ -54,14 +61,16 @@ const bytes32 = /^0x[0-9a-z]{64}?$/;
 			validate: input => bytes32.exec(input)
 		},
 	], (responces) =>
-		(responces.operation == 0 && responces.length == 1) ?
+		(responces.operation == 0 && responces.txs.length == 0) ?
+			'0x'
+		: (responces.operation == 0 && responces.txs.length == 1) ?
 			abi.encodeFunctionData(
 				'schedule(address,uint256,bytes,bytes32,bytes32,uint256)',
 				[
 					responces.txs[0].address,
 					responces.txs[0].value || 0,
 					responces.txs[0].data || '0x',
-					ethers.constants.HashZero,
+					responces.predecessor,
 					responces.salt,
 					responces.delay,
 				]
@@ -73,19 +82,21 @@ const bytes32 = /^0x[0-9a-z]{64}?$/;
 					responces.txs.map(({ address }) => address),
 					responces.txs.map(({ value }) => value || 0),
 					responces.txs.map(({ data }) => data || '0x'),
-					ethers.constants.HashZero,
+					responces.predecessor,
 					responces.salt,
 					responces.delay,
 				]
 			)
-		: (responces.operation == 1 && responces.length == 1) ?
+		: (responces.operation == 1 && responces.txs.length == 0) ?
+			'0x'
+		: (responces.operation == 1 && responces.txs.length == 1) ?
 			abi.encodeFunctionData(
 				'execute(address,uint256,bytes,bytes32,bytes32)',
 				[
 					responces.txs[0].address,
 					responces.txs[0].value || 0,
 					responces.txs[0].data || '0x',
-					ethers.constants.HashZero,
+					ethers.constants.HashZero,0xa9059cbb00000000000000000000000025229cfe0bd20e97aafcfaf82c57bb681c21db90000000000000000000000000000000000000000000000000000000e8d4a51000
 					responces.salt,
 				]
 			)
