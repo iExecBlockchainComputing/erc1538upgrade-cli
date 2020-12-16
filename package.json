@@ -7,6 +7,7 @@
   "main": "src/index.js",
   "scripts": {
     "start:erc1538update": "node src/erc1538update.js",
+    "start:deploy": "node src/deploy.js",
     "start:timelock": "node src/timelock.js"
   },
   "dependencies": {
