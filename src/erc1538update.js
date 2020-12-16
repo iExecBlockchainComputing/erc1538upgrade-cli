@@ -50,5 +50,4 @@ const abi = new ethers.utils.Interface([
 			]
 		)
 	});
-
 })().catch(console.error);

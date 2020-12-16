@@ -1,54 +1,73 @@
 'use strict';
 
-const { ethers } = require('ethers');
+const { getDefaultProvider, JsonRpcProvider } = require('@ethersproject/providers');
+const { Wallet                              } = require('@ethersproject/wallet');
+const { LedgerSigner                        } = require('@ethersproject/hardware-wallets');
+const isUrl   = require('is-url');
 const prompts = require('prompts');
-
-const questions = [{
-	type: 'select',
-	name: '___execute',
-	message: 'When',
-	choices: [
-		{ title: 'Execute now', value: true },
-		{ title: 'Encode for later', value: false },
-	],
-},{
-	type: (_, { ___execute }) => ___execute ? 'select' : null,
-	name: '___chain',
-	message: 'Select your blockchain',
-	choices: [
-		{ value: 'mainnet' },
-		{ value: 'rinkeby' },
-		{ value: 'ropsten' },
-		{ value: 'goerli' },
-		{ value: 'kovan' },
-		{ value: 'http://localhost:8545' },
-		{ title: 'custom endpoint', value: null },
-	],
-},{
-	type: (_, { ___execute, ___chain }) => ___execute && !___chain ? 'text' : null,
-	name: '___chain',
-	message: 'Enter blockchain endpoint',
-	initial: process.env.CHAIN,
-},{
-	type: (_, { ___execute }) => ___execute ? 'text' : null,
-	name: '___instance',
-	message: 'Address of the deployment',
-	// validate: ethers.utils.isAddress, // can be ENS
-},{
-	type: (_, { ___execute }) => ___execute ? 'text' : null,
-	name: '___pk',
-	message: 'Private key of the owner',
-	initial: process.env.MNEMONIC,
-}];
 
 module.exports = async function(tx = {})
 {
-	const responces = await prompts([ ...questions ]);
-	if (responces.___execute)
+	const { execute, provider, to, signer } = await prompts([{
+		type: 'select',
+		name: 'execute',
+		message: 'When',
+		choices: [
+			{ title: 'Execute now',      value: true  },
+			{ title: 'Encode for later', value: false },
+		],
+	},{
+		type: (_, { execute }) => execute && 'select',
+		name: 'provider',
+		message: 'Select your blockchain',
+		choices: [
+			{ value: 'mainnet'                      },
+			{ value: 'rinkeby'                      },
+			{ value: 'ropsten'                      },
+			{ value: 'goerli'                       },
+			{ value: 'kovan'                        },
+			{ value: 'http://localhost:8545'        },
+			{ title: 'custom endpoint', value: null },
+		],
+		format: chain => chain && getDefaultProvider(chain),
+	},{
+		type: (_, { execute, provider }) => execute && !provider && 'text',
+		name: 'provider',
+		message: 'Enter blockchain endpoint',
+		initial: process.env.CHAIN,
+		validate: isUrl,
+		format: endpoint => new JsonRpcProvider(endpoint),
+	},{
+		type: (_, { execute }) => execute && !tx.to && 'text',
+		name: 'to',
+		message: 'Address of the deployment',
+		// format: (address, { provider }) => provider.resolveName(address),
+	},{
+		type: (_, { execute }) => execute && 'select',
+		name: 'signertype',
+		message: 'Select your wallet type',
+		choices: [
+			{ title: 'Private key',            value: 'pk'     },
+			{ title: 'Ledger hardware wallet', value: 'ledger' },
+		],
+	},{
+		type: (_, { signertype }) => signertype == 'pk' && 'text',
+		name: 'signer',
+		message: 'Private key of the owner',
+		initial: process.env.MNEMONIC,
+		validate: pk => /^0x[0-9a-z]{64}$/.exec(pk),
+		format: (pk, { provider }) => new Wallet(pk, provider),
+	},{
+		type: (_, { signertype }) => signertype == 'ledger' && 'text',
+		name: 'signer',
+		message: 'Path',
+		initial: "m/44'/60'/0'/0/0",
+		format: (path, { provider }) => new LedgerSigner(provider, 'hid', path),
+	}]);
+
+	if (execute)
 	{
-		const provider = ethers.getDefaultProvider(responces.___chain);
-		const signer   = new ethers.Wallet(responces.___pk, provider);
-		const receipt  = await signer.sendTransaction({ to: responces.___instance, ...tx });
+		const receipt  = await signer.sendTransaction({ to, ...tx });
 		await receipt.wait();
 		console.log('done');
 	}

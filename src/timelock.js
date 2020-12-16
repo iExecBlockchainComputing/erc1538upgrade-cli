@@ -2,7 +2,7 @@
 
 const { ethers } = require('ethers');
 const prompts = require('prompts');
-const cliWithSigner = require('./utils/executeTx.js');
+const cliExecuteTx = require('./utils/executeTx.js');
 
 const abi = new ethers.utils.Interface([
 	'function hashOperation(address target, uint256 value, bytes calldata data, bytes32 predecessor, bytes32 salt)',
@@ -17,7 +17,6 @@ const bytes32 = /^0x[0-9a-z]{64}$/;
 const bytes = /^0x([0-9a-z]{2})*$/;
 
 (async () => {
-
 	const { operation } = await prompts({
 		type: 'select',
 		name: 'operation',
@@ -33,6 +32,7 @@ const bytes = /^0x([0-9a-z]{2})*$/;
 		type: (operation == 0 || operation == 1) && 'number',
 		name: 'count',
 		message: 'Number of sub-calls',
+		initial: 1,
 		min: 1,
 	});
 
@@ -87,7 +87,7 @@ const bytes = /^0x([0-9a-z]{2})*$/;
 		validate: input => bytes32.exec(input)
 	}]);
 
-	await cliWithSigner({
+	await cliExecuteTx({
 		value: (operation == 1) ? subcalls.reduce((acc, { value }) => acc + (value || 0), 0) : 0,
 		data:
 			(operation == 0 && subcalls.length == 0) ?
