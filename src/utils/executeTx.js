@@ -8,7 +8,7 @@ const { LedgerSigner                        } = require('@ethersproject/hardware
 const isUrl   = require('is-url');
 const prompts = require('prompts');
 
-module.exports = async function(tx = {})
+module.exports = async function(txRequest = {})
 {
 	const { execute, provider, to, signer } = await prompts([{
 		type: 'select',
@@ -40,7 +40,7 @@ module.exports = async function(tx = {})
 		validate: isUrl,
 		format: endpoint => new JsonRpcProvider(endpoint),
 	},{
-		type: (_, { execute }) => execute && !tx.to && 'text',
+		type: (_, { execute }) => execute && !txRequest.to && 'text',
 		name: 'to',
 		message: 'Address of the instance',
 		validate: address => isAddress(address) || isValidName(address),
@@ -69,13 +69,15 @@ module.exports = async function(tx = {})
 
 	if (execute)
 	{
-		const receipt  = await signer.sendTransaction({ to, ...tx });
-		await receipt.wait();
+		const tx      = await signer.sendTransaction({ to, ...txRequest });
+		const receipt = await tx.wait();
 		console.log('done');
+		return receipt;
 	}
 	else
 	{
 		console.log('To perform this update, send a transaction to your instance with the following fields:');
-		console.log(tx);
+		console.log(txRequest);
+		return null;
 	}
 }
