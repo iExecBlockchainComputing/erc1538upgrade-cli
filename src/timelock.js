@@ -1,10 +1,14 @@
 'use strict';
 
-const { ethers } = require('ethers');
-const prompts = require('prompts');
-const cliExecuteTx = require('./utils/executeTx.js');
+const prompts         = require('prompts');
+const { Interface   } = require('@ethersproject/abi');
+const { isAddress   } = require('@ethersproject/address');
+const { hexlify     } = require('@ethersproject/bytes');
+const { HashZero    } = require('@ethersproject/constants');
+const { randomBytes } = require('@ethersproject/random');
+const executeTxCli    = require('./utils/executeTxCli.js');
 
-const abi = new ethers.utils.Interface([
+const abi = new Interface([
 	'function hashOperation(address target, uint256 value, bytes calldata data, bytes32 predecessor, bytes32 salt)',
 	'function hashOperationBatch(address[] calldata targets, uint256[] calldata values, bytes[] calldata datas, bytes32 predecessor, bytes32 salt)',
 	'function schedule(address target, uint256 value, bytes calldata data, bytes32 predecessor, bytes32 salt, uint256 delay)',
@@ -43,7 +47,7 @@ const bytes = /^0x([0-9a-z]{2})*$/;
 				type: 'text',
 				name: 'address',
 				message: `Address for subcall[${i}]`,
-				validate: ethers.utils.isAddress,
+				validate: isAddress,
 			},{
 				type: 'text',
 				name: 'data',
@@ -66,13 +70,13 @@ const bytes = /^0x([0-9a-z]{2})*$/;
 		type: (operation == 0 || operation == 1) && 'text',
 		name: 'predecessor',
 		message: 'Predecessor',
-		initial: ethers.constants.HashZero,
+		initial: HashZero,
 		validate: input => bytes32.exec(input)
 	},{
 		type: (operation == 0 || operation == 1) && 'text',
 		name: 'salt',
 		message: 'Salt',
-		initial: operation == 0 && ethers.utils.hexlify(ethers.utils.randomBytes(32)),
+		initial: operation == 0 && hexlify(randomBytes(32)),
 		validate: input => bytes32.exec(input)
 	},{
 		type: operation == 0 && 'number',
@@ -87,7 +91,7 @@ const bytes = /^0x([0-9a-z]{2})*$/;
 		validate: input => bytes32.exec(input)
 	}]);
 
-	await cliExecuteTx({
+	await executeTxCli({
 		value: (operation == 1) ? subcalls.reduce((acc, { value }) => acc + (value || 0), 0) : 0,
 		data:
 			(operation == 0 && subcalls.length == 0) ?
@@ -125,7 +129,7 @@ const bytes = /^0x([0-9a-z]{2})*$/;
 						subcalls[0].address,
 						subcalls[0].value || 0,
 						subcalls[0].data || '0x',
-						ethers.constants.HashZero,
+						predecessor,
 						salt,
 					]
 				)
@@ -136,7 +140,7 @@ const bytes = /^0x([0-9a-z]{2})*$/;
 						subcalls.map(({ address }) => address),
 						subcalls.map(({ value }) => value || 0),
 						subcalls.map(({ data }) => data || '0x'),
-						ethers.constants.HashZero,
+						predecessor,
 						salt,
 					]
 				)

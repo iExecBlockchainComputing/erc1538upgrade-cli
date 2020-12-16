@@ -1,14 +1,14 @@
 'use strict';
 
+const prompts                                 = require('prompts');
+const isUrl                                   = require('is-url');
 const { isAddress                           } = require('@ethersproject/address');
 const { isValidName                         } = require('@ethersproject/hash');
 const { getDefaultProvider, JsonRpcProvider } = require('@ethersproject/providers');
 const { Wallet                              } = require('@ethersproject/wallet');
 const { LedgerSigner                        } = require('@ethersproject/hardware-wallets');
-const isUrl   = require('is-url');
-const prompts = require('prompts');
 
-module.exports = async function(txRequest = {})
+async function executeTxCli(txRequest = {})
 {
 	const { execute, provider, to, signer } = await prompts([{
 		type: 'select',
@@ -81,3 +81,5 @@ module.exports = async function(txRequest = {})
 		return null;
 	}
 }
+
+module.exports = executeTxCli;

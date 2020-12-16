@@ -1,11 +1,13 @@
 'use strict';
 
-const fs = require('fs');
-const { ethers } = require('ethers');
-const prompts = require('prompts');
-const cliExecuteTx = require('./utils/executeTx.js');
+const fs              = require('fs');
+const prompts         = require('prompts');
+const { Interface   } = require('@ethersproject/abi');
+const { isAddress   } = require('@ethersproject/address');
+const { AddressZero } = require('@ethersproject/constants');
+const executeTxCli    = require('./utils/executeTxCli.js');
 
-const abi = new ethers.utils.Interface([
+const abi = new Interface([
 	'function updateContract(address,string,string)',
 ]);
 
@@ -14,7 +16,7 @@ const abi = new ethers.utils.Interface([
 		type: 'text',
 		name: 'artefact',
 		message: 'Where is the truffle artefact',
-		format: path => new ethers.utils.Interface(JSON.parse(fs.readFileSync(path)).abi),
+		format: path => new Interface(JSON.parse(fs.readFileSync(path)).abi),
 		initial: 'example/IexecMaintenanceExtraDelegate.json',
 	},{
 		type: 'multiselect',
@@ -33,18 +35,18 @@ const abi = new ethers.utils.Interface([
 		type: (_, { operation }) => operation == 1 ? 'text' : null,
 		name: 'module',
 		message: 'Address of the module',
-		validate: ethers.utils.isAddress,
+		validate: isAddress,
 	},{
 		type: 'text',
 		name: 'commit',
 		message: 'Commit message',
 	}]);
 
-	await cliExecuteTx({
+	await executeTxCli({
 		data: abi.encodeFunctionData(
 			'updateContract(address,string,string)',
 			[
-				module || ethers.constants.AddressZero,
+				module || AddressZero,
 				fragments.map(x => x+';').join(''),
 				commit,
 			]
