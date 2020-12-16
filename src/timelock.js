@@ -96,7 +96,7 @@ const bytes32 = /^0x[0-9a-z]{64}?$/;
 					responces.txs[0].address,
 					responces.txs[0].value || 0,
 					responces.txs[0].data || '0x',
-					ethers.constants.HashZero,0xa9059cbb00000000000000000000000025229cfe0bd20e97aafcfaf82c57bb681c21db90000000000000000000000000000000000000000000000000000000e8d4a51000
+					ethers.constants.HashZero,
 					responces.salt,
 				]
 			)
