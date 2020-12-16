@@ -1,12 +1,12 @@
 'use strict';
 
-const fs                  = require('fs');
-const prompts             = require('prompts');
-const { Interface       } = require('@ethersproject/abi');
-const { HashZero        } = require('@ethersproject/constants');
-const executeTxCli        = require('./utils/executeTxCli.js');
-const getFunctionArgs     = require('./utils/getParams.js');
-const { bytes32         } = require('./utils/solidityTypes.js');
+const fs              = require('fs');
+const prompts         = require('prompts');
+const { Interface   } = require('@ethersproject/abi');
+const { HashZero    } = require('@ethersproject/constants');
+const executeTxCli    = require('./utils/executeTxCli.js');
+const getFunctionArgs = require('./utils/getParams.js');
+const { bytes32     } = require('./utils/solidityTypes.js');
 
 (async () => {
 	const factory = (new Interface([ 'function createContract(bytes,bytes32)' ]));
@@ -14,8 +14,9 @@ const { bytes32         } = require('./utils/solidityTypes.js');
 		type: 'text',
 		name: 'artefact',
 		message: 'Where is the truffle artefact',
+		validate: fs.existsSync,
 		format: path => JSON.parse(fs.readFileSync(path)),
-		initial: '/home/amxx/Work/iExec/code/PoCo/build/contracts/TimelockController.json',
+		initial: 'example/TimelockController.json',
 	});
 
 	if (!artefact || !artefact.abi || !artefact.bytecode) { throw 'Invalid artefact'; }

@@ -16,6 +16,7 @@ const abi = new Interface([
 		type: 'text',
 		name: 'artefact',
 		message: 'Where is the truffle artefact',
+		validate: fs.existsSync,
 		format: path => new Interface(JSON.parse(fs.readFileSync(path)).abi),
 		initial: 'example/IexecMaintenanceExtraDelegate.json',
 	},{
