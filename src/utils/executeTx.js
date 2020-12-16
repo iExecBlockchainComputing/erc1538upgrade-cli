@@ -3,7 +3,7 @@
 const { ethers } = require('ethers');
 const prompts = require('prompts');
 
-const extraQuestions = [{
+const questions = [{
 	type: 'select',
 	name: '___execute',
 	message: 'When',
@@ -41,23 +41,20 @@ const extraQuestions = [{
 	initial: process.env.MNEMONIC,
 }];
 
-
-module.exports = async function(questions = [] , encoder = () => '0x')
+module.exports = async function(tx = {})
 {
-	const responces = await prompts([ ...questions, ... extraQuestions ]);
-	const data      = await encoder(responces);
-
+	const responces = await prompts([ ...questions ]);
 	if (responces.___execute)
 	{
 		const provider = ethers.getDefaultProvider(responces.___chain);
 		const signer   = new ethers.Wallet(responces.___pk, provider);
-		const receipt  = await signer.sendTransaction({ to: responces.___instance, data });
+		const receipt  = await signer.sendTransaction({ to: responces.___instance, ...tx });
 		await receipt.wait();
 		console.log('done');
 	}
 	else
 	{
-		console.log('To perform this update, send a transaction to your ERC1538Proxy with the following data field:');
-		console.log(data);
+		console.log('To perform this update, send a transaction to your instance with the following fields:');
+		console.log(tx);
 	}
 }
