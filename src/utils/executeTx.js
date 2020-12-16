@@ -40,7 +40,7 @@ module.exports = async function(tx = {})
 	},{
 		type: (_, { execute }) => execute && !tx.to && 'text',
 		name: 'to',
-		message: 'Address of the deployment',
+		message: 'Address of the instance',
 		// format: (address, { provider }) => provider.resolveName(address),
 	},{
 		type: (_, { execute }) => execute && 'select',
