@@ -1,5 +1,7 @@
 'use strict';
 
+const { isAddress                           } = require('@ethersproject/address');
+const { isValidName                         } = require('@ethersproject/hash');
 const { getDefaultProvider, JsonRpcProvider } = require('@ethersproject/providers');
 const { Wallet                              } = require('@ethersproject/wallet');
 const { LedgerSigner                        } = require('@ethersproject/hardware-wallets');
@@ -41,19 +43,20 @@ module.exports = async function(tx = {})
 		type: (_, { execute }) => execute && !tx.to && 'text',
 		name: 'to',
 		message: 'Address of the instance',
+		validate: address => isAddress(address) || isValidName(address),
 		// format: (address, { provider }) => provider.resolveName(address),
 	},{
 		type: (_, { execute }) => execute && 'select',
 		name: 'signertype',
 		message: 'Select your wallet type',
 		choices: [
-			{ title: 'Private key',            value: 'pk'     },
+			{ title: 'Private key',            value: 'wallet' },
 			{ title: 'Ledger hardware wallet', value: 'ledger' },
 		],
 	},{
-		type: (_, { signertype }) => signertype == 'pk' && 'text',
+		type: (_, { signertype }) => signertype == 'wallet' && 'text',
 		name: 'signer',
-		message: 'Private key of the owner',
+		message: 'Private key of the wallet',
 		initial: process.env.MNEMONIC,
 		validate: pk => /^0x[0-9a-z]{64}$/.exec(pk),
 		format: (pk, { provider }) => new Wallet(pk, provider),
@@ -61,7 +64,7 @@ module.exports = async function(tx = {})
 		type: (_, { signertype }) => signertype == 'ledger' && 'text',
 		name: 'signer',
 		message: 'Path',
-		initial: "m/44'/60'/0'/0/0",
+		initial: 'm/44\'/60\'/0\'/0/0',
 		format: (path, { provider }) => new LedgerSigner(provider, 'hid', path),
 	}]);
 
