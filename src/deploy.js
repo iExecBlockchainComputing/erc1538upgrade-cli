@@ -140,9 +140,8 @@ async function asyncReduce(functors)
 	);
 }
 
-async function getParams(param, parentName = "")
+async function getParams(param, name = param.name || '')
 {
-	const name = param.name || parentName;
 	if (param.baseType == 'array') {
 		const { count } = await prompts({ type: 'number', name: 'count', message: `Length of "${name}[]"`, initial: 0 });
 		if (count == undefined) throw 'Error';
