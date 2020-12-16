@@ -44,7 +44,6 @@ module.exports = async function(tx = {})
 		name: 'to',
 		message: 'Address of the instance',
 		validate: address => isAddress(address) || isValidName(address),
-		// format: (address, { provider }) => provider.resolveName(address),
 	},{
 		type: (_, { execute }) => execute && 'select',
 		name: 'signertype',
