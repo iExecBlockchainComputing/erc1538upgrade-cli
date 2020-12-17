@@ -27,7 +27,7 @@ async function executeTxCli(txRequest = {}, providerOrSigner = null)
 			: undefined,
 	});
 
-	const { execute, provider, to, signer } = await prompts([{
+	const { execute, provider, signer, to, confirm } = await prompts([{
 		type: 'select',
 		name: 'execute',
 		message: 'When',
@@ -65,17 +65,11 @@ async function executeTxCli(txRequest = {}, providerOrSigner = null)
 		type: (_, { execute }) => execute && 'select',
 		name: 'signer',
 		message: 'Select your wallet type',
-		choices: (_, { provider}) => [{
-			title: 'Private key',
-			value: 'wallet'
-		},{
-			title: 'JsonRpc signer',
-			value: provider instanceof JsonRpcProvider && provider.getSigner(),
-			disabled: !(provider instanceof JsonRpcProvider),
-		},{
-			title: 'Ledger hardware wallet',
-			value: 'ledger'
-		}],
+		choices: (_, { provider}) => [
+			{ title: 'Private key',    value: 'wallet'                                                    },
+			{ title: 'JsonRpc signer', value: 'jsonrpc', disabled: !(provider instanceof JsonRpcProvider) },
+			{ title: 'Ledger',         value: 'ledger'                                                    },
+		],
 	},{
 		type: (_, { signer }) => signer == 'wallet' && 'text',
 		name: 'signer',
@@ -84,15 +78,25 @@ async function executeTxCli(txRequest = {}, providerOrSigner = null)
 		validate: pk => /^0x[0-9a-z]{64}$/.exec(pk),
 		format: (pk, { provider }) => new Wallet(pk, provider),
 	},{
+		type: (_, { signer }) => signer == 'jsonrpc' && 'number',
+		name: 'signer',
+		message: 'Index of the account',
+		initial: 0,
+		min: 0,
+		format: (index, { provider }) => provider.getSigner(index),
+	},{
 		type: (_, { signer }) => signer == 'ledger' && 'text',
 		name: 'signer',
 		message: 'Path',
 		initial: 'm/44\'/60\'/0\'/0/0',
 		format: (path, { provider }) => new LedgerSigner(provider, 'hid', path),
+	},{
+		type: 'confirm',
+		name: 'confirm',
+		message: 'Confirm',
 	}]);
 
-	if (execute == undefined) throw 'Aborted';
-	if (execute && signer == undefined) throw 'Aborted';
+	if (confirm == undefined) throw 'Aborted';
 
 	if (execute)
 	{

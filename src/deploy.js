@@ -28,13 +28,7 @@ const { bytes32     } = require('./utils/solidityTypes.js');
 		name: 'salt',
 		message: 'Salt',
 		initial: HashZero,
-	},{
-		type: 'confirm',
-		name: 'confirm',
-		message: 'Confirm deployment',
 	}]);
-
-	if (!confirm) { throw 'Aborted'; }
 
 	await executeTxCli({
 		to: '0xfAC000a12dA42B871c0AaD5F25391aAe62958Db1',
