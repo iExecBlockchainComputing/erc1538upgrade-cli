@@ -14,7 +14,10 @@ const { LedgerSigner                        } = require('@ethersproject/hardware
 async function executeTxCli(txRequest = {}, providerOrSigner = null)
 {
 	prompts.override({
-		to: txRequest.to,
+		execute:
+			!!providerOrSigner,
+		to:
+			txRequest.to,
 		provider:
 			providerOrSigner instanceof Provider
 			? providerOrSigner
@@ -96,7 +99,7 @@ async function executeTxCli(txRequest = {}, providerOrSigner = null)
 		message: 'Confirm',
 	}]);
 
-	if (confirm == undefined) throw 'Aborted';
+	if (!confirm) throw 'Aborted';
 
 	if (execute)
 	{

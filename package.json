@@ -6,6 +6,7 @@
   "description": "",
   "main": "src/index.js",
   "scripts": {
+    "start:anycall": "node src/anycall.js",
     "start:erc1538update": "node src/erc1538update.js",
     "start:deploy": "node src/deploy.js",
     "start:timelock": "node src/timelock.js"
