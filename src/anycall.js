@@ -10,6 +10,8 @@ const { isValidName                         } = require('@ethersproject/hash');
 const { getDefaultProvider, JsonRpcProvider } = require('@ethersproject/providers');
 const getFunctionArgs                         = require('./utils/getParams.js');
 
+prompts.override(require('yargs').argv);
+
 (async () => {
 	/****************************************************************************
 	 *                              Load Artefact                               *
@@ -164,7 +166,7 @@ const getFunctionArgs                         = require('./utils/getParams.js');
 	{
 		case 'view':
 		case 'pure':
-			console.log(await contract[key](...params));
+			console.log({ result: await contract[key](...params) });
 			break;
 		case 'payable':
 			// TODO, add value

@@ -23,6 +23,7 @@
     "@ethersproject/random": "^5.0.6",
     "@ethersproject/wallet": "^5.0.9",
     "is-url": "^1.2.4",
-    "prompts": "^2.4.0"
+    "prompts": "^2.4.0",
+    "yargs": "^16.2.0"
   }
 }
