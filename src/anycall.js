@@ -5,12 +5,24 @@ const prompts                                 = require('prompts');
 const isUrl                                   = require('is-url');
 const { Interface                           } = require('@ethersproject/abi');
 const { isAddress                           } = require('@ethersproject/address');
+const { BigNumber                           } = require('@ethersproject/bignumber');
 const { Contract                            } = require('@ethersproject/contracts');
 const { isValidName                         } = require('@ethersproject/hash');
 const { getDefaultProvider, JsonRpcProvider } = require('@ethersproject/providers');
 const getFunctionArgs                         = require('./utils/getParams.js');
 
 prompts.override(require('yargs').argv);
+
+function format(value) {
+	// TODO: objects
+	if (BigNumber.isBigNumber(value)) {
+		return value.toString();
+	} else if (Array.isArray(value)) {
+		return value.map(format);
+	} else {
+		return value;
+	}
+}
 
 (async () => {
 	/****************************************************************************
@@ -33,17 +45,17 @@ prompts.override(require('yargs').argv);
 	/****************************************************************************
 	 *                             Select function                              *
 	 ****************************************************************************/
-	const { key } = await prompts({
+	const { selector } = await prompts({
 		type: 'select',
-		name: 'key',
+		name: 'selector',
 		message: 'Function to call',
 		choices: Object.keys(abi.functions).map(value => ({ value })),
 	});
-	if (key == undefined) { throw 'Aborted'; }
+	if (selector == undefined) { throw 'Aborted'; }
 
-	const fragment = abi.functions[key];
+	const fragment = abi.functions[selector];
 	const readonly = [ 'view', 'pure' ].includes(fragment.stateMutability);
-	const params   = await getFunctionArgs(fragment);
+	const params   = require('yargs').argv.args && JSON.parse(require('yargs').argv.args) || await getFunctionArgs(fragment);
 
 	/****************************************************************************
 	 *                             Select operation                             *
@@ -61,7 +73,7 @@ prompts.override(require('yargs').argv);
 
 	if (!execute)
 	{
-		const data = abi.encodeFunctionData(key, params)
+		const data = abi.encodeFunctionData(selector, params)
 		console.log('Encoded function call:', data)
 		return
 	}
@@ -156,22 +168,21 @@ prompts.override(require('yargs').argv);
 	 *                                 Execute                                  *
 	 ****************************************************************************/
 	const { confirm } = await prompts({
-		type: execute && 'confirm',
+		type: !readonly && 'confirm',
 		name: 'confirm',
 		message: 'Confirm',
 	});
-	if (!confirm) throw 'Aborted';
+	if (!readonly && !confirm) throw 'Aborted';
 
-	switch (fragment.stateMutability)
-	{
+	switch (fragment.stateMutability) {
 		case 'view':
 		case 'pure':
-			console.log({ result: await contract[key](...params) });
+			console.log({ result: format(await contract[selector](...params)) });
 			break;
 		case 'payable':
 			// TODO, add value
 		case 'nonpayable':
-			const tx      = await contract.connect(signer)[key](...params);
+			const tx      = await contract.connect(signer)[selector](...params);
 			const receipt = await tx.await();
 			console.log('done.');
 			break;
