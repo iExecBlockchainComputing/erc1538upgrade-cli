@@ -15,7 +15,7 @@ async function executeTxCli(txRequest = {}, providerOrSigner = null)
 {
 	prompts.override({
 		execute:
-			!!providerOrSigner,
+			providerOrSigner ? true : undefined,
 		to:
 			txRequest.to,
 		provider:
@@ -105,6 +105,8 @@ async function executeTxCli(txRequest = {}, providerOrSigner = null)
 	{
 		const tx      = await signer.sendTransaction({ to, ...txRequest });
 		const receipt = await tx.wait();
+		console.log(tx)
+		console.log(receipt)
 		console.log('done');
 		return receipt;
 	}

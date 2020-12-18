@@ -15,12 +15,11 @@ const getFunctionArgs                         = require('./utils/getParams.js');
 const argv = yargs.option('address', { string: true }).argv;
 prompts.override(argv);
 
-function format(value) {
-	// TODO: objects
+function formatResult(value) {
 	if (BigNumber.isBigNumber(value)) {
 		return value.toString();
 	} else if (Array.isArray(value)) {
-		return value.map(format);
+		return Object.keys(value).reduce((acc, key) => Object.assign(acc, { [key]: formatResult(value[key]) }), Array());
 	} else {
 		return value;
 	}
@@ -138,7 +137,7 @@ function format(value) {
 		type: !readonly && 'select',
 		name: 'signer',
 		message: 'Select your wallet type',
-		choices: (_, { provider}) => [
+		choices: [
 			{ title: 'Private key',    value: 'wallet'                                                    },
 			{ title: 'JsonRpc signer', value: 'jsonrpc', disabled: !(provider instanceof JsonRpcProvider) },
 			{ title: 'Ledger',         value: 'ledger'                                                    },
@@ -179,14 +178,14 @@ function format(value) {
 	switch (fragment.stateMutability) {
 		case 'view':
 		case 'pure':
-			console.log({ result: format(await contract[selector](...params)) });
+			console.log({ result: formatResult(await contract[selector](...params)) });
 			break;
 		case 'payable':
 			// TODO, add value
 		case 'nonpayable':
 			const tx      = await contract.connect(signer)[selector](...params);
 			const receipt = await tx.await();
-			console.log('done.');
+			console.log({ receipt });
 			break;
 	}
 
