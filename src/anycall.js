@@ -1,8 +1,9 @@
 'use strict';
 
 const fs                                      = require('fs');
-const prompts                                 = require('prompts');
 const isUrl                                   = require('is-url');
+const prompts                                 = require('prompts');
+const yargs                                   = require('yargs');
 const { Interface                           } = require('@ethersproject/abi');
 const { isAddress                           } = require('@ethersproject/address');
 const { BigNumber                           } = require('@ethersproject/bignumber');
@@ -11,7 +12,8 @@ const { isValidName                         } = require('@ethersproject/hash');
 const { getDefaultProvider, JsonRpcProvider } = require('@ethersproject/providers');
 const getFunctionArgs                         = require('./utils/getParams.js');
 
-prompts.override(require('yargs').argv);
+const argv = yargs.option('address', { string: true }).argv;
+prompts.override(argv);
 
 function format(value) {
 	// TODO: objects
@@ -55,7 +57,7 @@ function format(value) {
 
 	const fragment = abi.functions[selector];
 	const readonly = [ 'view', 'pure' ].includes(fragment.stateMutability);
-	const params   = require('yargs').argv.args && JSON.parse(require('yargs').argv.args) || await getFunctionArgs(fragment);
+	const params   = argv.args && JSON.parse(argv.args) || await getFunctionArgs(fragment);
 
 	/****************************************************************************
 	 *                             Select operation                             *
