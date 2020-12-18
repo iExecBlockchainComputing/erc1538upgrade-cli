@@ -51,7 +51,7 @@ function format(value) {
 		message: 'Function to call',
 		choices: Object.keys(abi.functions).map(value => ({ value })),
 	});
-	if (selector == undefined) { throw 'Aborted'; }
+	if (abi.functions[selector] == undefined) { throw 'Aborted'; }
 
 	const fragment = abi.functions[selector];
 	const readonly = [ 'view', 'pure' ].includes(fragment.stateMutability);
